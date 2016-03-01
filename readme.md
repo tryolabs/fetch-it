@@ -124,6 +124,12 @@ fetchIt.addMiddlewares([jsonMiddleware]);
 
 ### `fetchIt.clearMiddlewares()`
 
+## Roadmap
+- better docs,
+- add more middlewares,
+- better tests,
+- add travis, coveralls,
+- create another project to create something similar to $resource based on fetch-it.
 
 ## Credits
 `fetchIt` is heavily based on [Axios](https://github.com/mzabriskie/axios), but based on [`fetch()`](http://github.github.io/fetch).
