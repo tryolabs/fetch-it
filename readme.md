@@ -4,8 +4,8 @@ An enhanced HTTP client based on fetch.
 ## Features
 You can do all the same thing that you do with fetch, plus:
 
-- Add middleware, to intercept requests and responses,
-- create custom config instances.
+- Add middleware, to intercept requests and responses
+- Create custom config instances
 
 ## Installation
 
@@ -125,11 +125,11 @@ fetchIt.addMiddlewares([jsonMiddleware]);
 ### `fetchIt.clearMiddlewares()`
 
 ## Roadmap
-- better docs,
-- add more middlewares,
-- better tests,
-- add travis, coveralls,
-- create another project to create something similar to $resource based on fetch-it.
+- Better docs
+- Add more middlewares
+- Add better tests
+- Add travis and coveralls
+- Create another project to create something similar to $resource based on fetch-it.
 
 ## Credits
 `fetchIt` is heavily based on [Axios](https://github.com/mzabriskie/axios), but based on [`fetch()`](http://github.github.io/fetch).
