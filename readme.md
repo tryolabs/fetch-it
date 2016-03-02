@@ -1,6 +1,8 @@
 # fetch-it
 An enhanced HTTP client based on fetch.
 
+Blogpost: [fetch-it an enhanced http client based on fetch] (http://blog.tryolabs.com/2016/03/02/fetch-it-enhanced-http-client-based-on-fetch/)
+
 ## Features
 You can do all the same thing that you do with fetch, plus:
 
