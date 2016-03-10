@@ -4,6 +4,7 @@
   "description": "An extended version of window.fetch with interceptors and configurable instances",
   "main": "dist/fetch-it.js",
   "scripts": {
+    "prepublish": "npm run build",
     "build": "rm -rf dist && $(npm bin)/webpack",
     "test": "$(npm bin)/karma start --single-run"
   },
