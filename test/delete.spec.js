@@ -1,26 +1,29 @@
 import FetchIt from '../src/fetch-it.js';
-import 'whatwg-fetch';
+import 'isomorphic-fetch';
 
 describe('Default instance delete() method', () => {
   let url = 'http://example.com/page';
+  let fetchStub;
 
-  beforeEach(() => {
-    spyOn(window, 'fetch');
-  });
+  before(() => fetchStub = sinon.stub(global, 'fetch'));
 
-  it('should call window.fetch with the same parameters', (done) => {
-    window.fetch(url, { method: 'DELETE' });
+  after(() => fetchStub.restore());
+
+  beforeEach(() => fetchStub.reset());
+
+  it('should call global.fetch with the same parameters', (done) => {
+    global.fetch(url, { method: 'DELETE' });
     FetchIt.delete(url)
       .then(() => {
-        let superArgs = window.fetch.calls.argsFor(1);
-        let fetchArgs = window.fetch.calls.argsFor(0);
+        let fetchItArgs = fetchStub.getCall(1).args;
+        let fetchArgs = fetchStub.getCall(0).args;
 
-        expect(window.fetch.calls.count()).toBe(2);
-        expect(superArgs.length).toBe(1);
-        expect(superArgs[0].url).toBe(fetchArgs[0]);
-        expect(superArgs[0].method).toBe(fetchArgs[1].method);
-        expect(superArgs[0].method).toBe('DELETE');
-        expect(superArgs[0].headers.getAll().length).toBe(0);
+        expect(fetchStub.callCount).to.be.equal(2);
+        expect(fetchItArgs.length).to.be.equal(1);
+        expect(fetchItArgs[0].url).to.be.equal(fetchArgs[0]);
+        expect(fetchItArgs[0].method).to.be.equal(fetchArgs[1].method);
+        expect(fetchItArgs[0].method).to.be.equal('DELETE');
+        expect(fetchItArgs[0].headers.getAll().length).to.be.equal(0);
 
         done();
       });
@@ -31,18 +34,18 @@ describe('Default instance delete() method', () => {
       method: 'PUT',
     };
 
-    window.fetch(url, { method: 'DELETE' });
+    global.fetch(url, { method: 'DELETE' });
     FetchIt.delete(url, options)
       .then(() => {
-        let superArgs = window.fetch.calls.argsFor(1);
-        let fetchArgs = window.fetch.calls.argsFor(0);
+        let fetchItArgs = fetchStub.getCall(1).args;
+        let fetchArgs = fetchStub.getCall(0).args;
 
-        expect(window.fetch.calls.count()).toBe(2);
-        expect(superArgs.length).toBe(1);
-        expect(superArgs[0].url).toBe(fetchArgs[0]);
-        expect(superArgs[0].method).toBe(fetchArgs[1].method);
-        expect(superArgs[0].method).toBe('DELETE');
-        expect(superArgs[0].headers.getAll().length).toBe(0);
+        expect(fetchStub.callCount).to.be.equal(2);
+        expect(fetchItArgs.length).to.be.equal(1);
+        expect(fetchItArgs[0].url).to.be.equal(fetchArgs[0]);
+        expect(fetchItArgs[0].method).to.be.equal(fetchArgs[1].method);
+        expect(fetchItArgs[0].method).to.be.equal('DELETE');
+        expect(fetchItArgs[0].headers.getAll().length).to.be.equal(0);
 
         done();
       });

@@ -1,4 +1,4 @@
-const webpackConf = require('./webpack.config.js');
+const webpackConf = require('./webpack.karma.config.js');
 
 module.exports = function (config) {
   config.set({
@@ -7,7 +7,7 @@ module.exports = function (config) {
       './node_modules/babel-polyfill/dist/polyfill.js',
       './test/**/*.spec.js'
     ],
-    frameworks: ['jasmine', 'es6-shim'],
+    frameworks: ['mocha', 'chai', 'sinon', 'sinon-chai', 'es6-shim'],
     preprocessors: {
       './test/**/*.spec.js': ['webpack']
     },

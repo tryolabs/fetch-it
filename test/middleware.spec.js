@@ -1,8 +1,10 @@
 import FetchIt from '../src/fetch-it.js';
-import 'whatwg-fetch';
+import 'isomorphic-fetch';
 
 describe('Middleware features', () => {
   let url = 'http://example.com/page';
+  let fetchStub;
+
   let middleware1 = {
     request(req) {
       req.headers.set('x-req-fake1', true);
@@ -10,7 +12,7 @@ describe('Middleware features', () => {
     },
 
     requestError(error) {
-      return window.Promise.reject(error);
+      return global.Promise.reject(error);
     },
 
     response(res) {
@@ -19,7 +21,7 @@ describe('Middleware features', () => {
     },
 
     responseError(error) {
-      return window.Promise.reject(error);
+      return global.Promise.reject(error);
     }
   };
 
@@ -30,7 +32,7 @@ describe('Middleware features', () => {
     },
 
     requestError(error) {
-      return window.Promise.reject(error);
+      return global.Promise.reject(error);
     },
 
     response(res) {
@@ -39,49 +41,53 @@ describe('Middleware features', () => {
     },
 
     responseError(error) {
-      return window.Promise.reject(error);
+      return global.Promise.reject(error);
     }
   };
 
-  beforeEach(() => {
-    spyOn(window, 'fetch').and.callFake(() => {
-      return new window.Response('response');
-    });
-  });
+  before(() => fetchStub = sinon.stub(global, 'fetch', () => {
+    return new global.Response('response');
+  }));
 
-  afterEach(() => {
-    FetchIt.clearMiddlewares();
-  });
+  after(() => global.fetch.restore());
 
-  it('should call request() before calling window.fetch', (done) => {
-    spyOn(middleware1, 'request').and.callThrough();
+  beforeEach(() => fetchStub.reset());
+
+  afterEach(() => FetchIt.clearMiddlewares());
+
+  it('should call request() before calling global.fetch', (done) => {
+    let middleware1RequestStub = sinon.spy(middleware1, 'request');
 
     FetchIt.addMiddlewares([middleware1]);
     FetchIt.fetch(url)
       .then(() => {
-        expect(middleware1.request.calls.count()).toBe(1);
-        expect(window.fetch.calls.count()).toBe(1);
-        expect(window.fetch.calls.argsFor(0)[0].headers.has('x-req-fake1'))
-          .toBe(true);
+        expect(middleware1RequestStub.callCount).to.be.equal(1);
+        expect(fetchStub.callCount).to.be.equal(1);
+        expect(fetchStub.getCall(0).args[0].headers.has('x-req-fake1'))
+          .to.be.equal(true);
+
+        middleware1RequestStub.restore();
 
         done();
       })
       .catch(done.fail);
   });
 
-  it('should call response() after calling window.fetch', (done) => {
-    spyOn(middleware1, 'response').and.callThrough();
+  it('should call response() after calling global.fetch', (done) => {
+    let middleware1ResponseStub = sinon.spy(middleware1, 'response');
 
     FetchIt.addMiddlewares([middleware1]);
     FetchIt.fetch(url)
       .then((res) => {
-        expect(middleware1.response.calls.count()).toBe(1);
-        expect(window.fetch.calls.count()).toBe(1);
-        expect(window.fetch.calls.argsFor(0)[0].headers.has('x-req-fake1'))
-          .toBe(true);
-        expect(window.fetch.calls.argsFor(0)[0].headers.has('x-res-fake1'))
-          .toBe(false);
-        expect(res.headers.has('x-res-fake1')).toBe(true);
+        expect(middleware1ResponseStub.callCount).to.be.equal(1);
+        expect(fetchStub.callCount).to.be.equal(1);
+        expect(fetchStub.getCall(0).args[0].headers.has('x-req-fake1'))
+          .to.be.equal(true);
+        expect(fetchStub.getCall(0).args[0].headers.has('x-res-fake1'))
+          .to.be.equal(false);
+        expect(res.headers.has('x-res-fake1')).to.be.equal(true);
+
+        middleware1ResponseStub.restore();
 
         done();
       })
@@ -90,20 +96,25 @@ describe('Middleware features', () => {
 
   it(`should call requestError() after previous middleware request() threw an
       error`, (done) => {
-    spyOn(middleware1, 'request').and.throwError();
-    spyOn(middleware1, 'requestError');
-    spyOn(middleware2, 'request');
-    spyOn(middleware2, 'requestError').and.callThrough();
+    let middleware1RequestStub = sinon.stub(middleware1, 'request').throws();
+    let middleware1RequestErrorStub = sinon.stub(middleware1, 'requestError');
+    let middleware2RequestStub = sinon.stub(middleware2, 'request');
+    let middleware2RequestErrorStub = sinon.spy(middleware2, 'requestError');
 
     FetchIt.addMiddlewares([middleware1, middleware2]);
     FetchIt.fetch(url)
       .then(done.fail)
       .catch(() => {
-        expect(middleware1.request.calls.count()).toBe(1);
-        expect(middleware2.request.calls.count()).toBe(0);
-        expect(middleware1.requestError.calls.count()).toBe(0);
-        expect(middleware2.requestError.calls.count()).toBe(1);
-        expect(window.fetch.calls.count()).toBe(0);
+        expect(middleware1RequestStub.callCount).to.be.equal(1);
+        expect(middleware2RequestStub.callCount).to.be.equal(0);
+        expect(middleware1RequestErrorStub.callCount).to.be.equal(0);
+        expect(middleware2RequestErrorStub.callCount).to.be.equal(1);
+        expect(fetchStub.callCount).to.be.equal(0);
+
+        middleware1RequestStub.restore();
+        middleware1RequestErrorStub.restore();
+        middleware2RequestStub.restore();
+        middleware2RequestErrorStub.restore();
 
         done();
       });
@@ -111,59 +122,73 @@ describe('Middleware features', () => {
 
   it(`should call responseError() after previous middleware response() threw an
       error`, (done) => {
-    spyOn(middleware2, 'response').and.throwError();
-    spyOn(middleware2, 'responseError');
-    spyOn(middleware1, 'response');
-    spyOn(middleware1, 'responseError').and.callThrough();
+    let middleware1ResponseStub = sinon.stub(middleware1, 'response');
+    let middleware1ResponseErrorStub = sinon.spy(middleware1, 'responseError');
+    let middleware2ResponseStub = sinon.stub(middleware2, 'response').throws();
+    let middleware2ResponseErrorStub = sinon.stub(middleware2, 'responseError');
 
     FetchIt.addMiddlewares([middleware1, middleware2]);
     FetchIt.fetch(url)
       .then(done.fail)
       .catch(() => {
-        expect(middleware1.response.calls.count()).toBe(0);
-        expect(middleware2.response.calls.count()).toBe(1);
-        expect(middleware1.responseError.calls.count()).toBe(1);
-        expect(middleware2.responseError.calls.count()).toBe(0);
-        expect(window.fetch.calls.count()).toBe(1);
+        expect(middleware1ResponseStub.callCount).to.be.equal(0);
+        expect(middleware2ResponseStub.callCount).to.be.equal(1);
+        expect(middleware1ResponseErrorStub.callCount).to.be.equal(1);
+        expect(middleware2ResponseErrorStub.callCount).to.be.equal(0);
+        expect(fetchStub.callCount).to.be.equal(1);
+
+        middleware1ResponseStub.restore();
+        middleware1ResponseErrorStub.restore();
+        middleware2ResponseStub.restore();
+        middleware2ResponseErrorStub.restore();
 
         done();
       });
   });
 
   it('should calls middlewares in order', (done) => {
-    spyOn(middleware1, 'request').and.callThrough();
-    spyOn(middleware2, 'request').and.callThrough();
-    spyOn(middleware1, 'requestError');
-    spyOn(middleware2, 'requestError');
-    spyOn(middleware1, 'response').and.callThrough();
-    spyOn(middleware2, 'response').and.callThrough();
-    spyOn(middleware1, 'responseError');
-    spyOn(middleware2, 'responseError');
+    let middleware1RequestStub = sinon.spy(middleware1, 'request');
+    let middleware2RequestStub = sinon.spy(middleware2, 'request');
+    let middleware1RequestErrorStub = sinon.stub(middleware1, 'requestError');
+    let middleware2RequestErrorStub = sinon.stub(middleware2, 'requestError');
+    let middleware1ResponseStub = sinon.spy(middleware1, 'response');
+    let middleware2ResponseStub = sinon.spy(middleware2, 'response');
+    let middleware1ResponseErrorStub = sinon.stub(middleware1, 'responseError');
+    let middleware2ResponseErrorStub = sinon.stub(middleware2, 'responseError');
 
     FetchIt.addMiddlewares([middleware1, middleware2]);
     FetchIt.fetch(url)
       .then((res) => {
-        expect(middleware1.request.calls.count()).toBe(1);
-        expect(middleware2.request.calls.count()).toBe(1);
-        expect(middleware1.requestError.calls.count()).toBe(0);
-        expect(middleware2.requestError.calls.count()).toBe(0);
-        expect(window.fetch.calls.count()).toBe(1);
-        expect(middleware1.response.calls.count()).toBe(1);
-        expect(middleware2.response.calls.count()).toBe(1);
-        expect(middleware1.responseError.calls.count()).toBe(0);
-        expect(middleware2.responseError.calls.count()).toBe(0);
+        expect(middleware1RequestStub.callCount).to.be.equal(1);
+        expect(middleware2RequestStub.callCount).to.be.equal(1);
+        expect(middleware1RequestErrorStub.callCount).to.be.equal(0);
+        expect(middleware2RequestErrorStub.callCount).to.be.equal(0);
+        expect(fetchStub.callCount).to.be.equal(1);
+        expect(middleware1ResponseStub.callCount).to.be.equal(1);
+        expect(middleware2ResponseStub.callCount).to.be.equal(1);
+        expect(middleware1ResponseErrorStub.callCount).to.be.equal(0);
+        expect(middleware2ResponseErrorStub.callCount).to.be.equal(0);
 
         expect(
-          middleware2.request.calls.argsFor(0)[0].headers.has('x-req-fake1')
-        ).toBe(true);
-        expect(window.fetch.calls.argsFor(0)[0].headers.has('x-req-fake1'))
-          .toBe(true);
-        expect(window.fetch.calls.argsFor(0)[0].headers.has('x-req-fake2'))
-          .toBe(true);
+          middleware2RequestStub.getCall(0).args[0].headers.has('x-req-fake1')
+        ).to.be.equal(true);
+        expect(fetchStub.getCall(0).args[0].headers.has('x-req-fake1'))
+          .to.be.equal(true);
+        expect(fetchStub.getCall(0).args[0].headers.has('x-req-fake2'))
+          .to.be.equal(true);
         expect(
-          middleware1.response.calls.argsFor(0)[0].headers.has('x-res-fake2')
-        ).toBe(true);
-        expect(res.headers.has('x-res-fake1')).toBe(true);
+          middleware1ResponseStub.getCall(0).args[0].headers.has('x-res-fake2')
+        ).to.be.equal(true);
+        expect(res.headers.has('x-res-fake1')).to.be.equal(true);
+
+        middleware1RequestStub.restore();
+        middleware2RequestStub.restore();
+        middleware1RequestErrorStub.restore();
+        middleware2RequestErrorStub.restore();
+        middleware1ResponseStub.restore();
+        middleware2ResponseStub.restore();
+        middleware1ResponseErrorStub.restore();
+        middleware2ResponseErrorStub.restore();
 
         done();
       })
