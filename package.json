@@ -12,6 +12,10 @@
     "type": "git",
     "url": "https://github.com/tryolabs/fetch-it.git"
   },
+  "homepage": "https://github.com/tryolabs/fetch-it",
+  "bugs": {
+    "url": "https://github.com/tryolabs/fetch-it/issues"
+  },
   "keywords": [
     "fetch",
     "http",
