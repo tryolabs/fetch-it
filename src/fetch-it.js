@@ -1,5 +1,4 @@
-import 'es6-promise';
-import 'whatwg-fetch';
+import 'isomorphic-fetch';
 
 
 const DEFAULT_CONFIG = {};
@@ -13,7 +12,7 @@ class FetchIt {
 
   _createRequest(url, options, method, data) {
     if (!options && !method && !data) {
-      return new window.Request(url);
+      return new global.Request(url);
     }
 
     let defaultMethod = !data && (!!options && !options.body) ? 'GET' : 'POST';
@@ -21,27 +20,27 @@ class FetchIt {
     options = Object.assign({}, this.config, options || {});
     options.method = method || options.method || defaultMethod;
     if (!!data) {
-      if (data instanceof window.Blob || data instanceof window.FormData ||
+      if (data instanceof global.Blob || data instanceof global.FormData ||
           typeof data === 'string') {
         options.body = data;
       } else {
-        options.body = window.JSON.stringify(data);
+        options.body = global.JSON.stringify(data);
       }
     }
 
-    return new window.Request(url, options);
+    return new global.Request(url, options);
   }
 
   _request(urlOrRequest, ...options) {
     let request;
-    if (urlOrRequest instanceof window.Request) {
+    if (urlOrRequest instanceof global.Request) {
       request = urlOrRequest;
     } else {
       request = this._createRequest(urlOrRequest, ...options);
     }
 
-    let promise = window.Promise.resolve(request);
-    let chain = [window.fetch, undefined];
+    let promise = global.Promise.resolve(request);
+    let chain = [global.fetch, undefined];
 
     for (let middleware of this.middlewares.reverse()) {
       chain.unshift(middleware.request, middleware.requestError);
