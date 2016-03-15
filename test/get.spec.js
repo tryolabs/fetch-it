@@ -1,28 +1,32 @@
 import FetchIt from '../src/fetch-it.js';
-import 'whatwg-fetch';
+import 'isomorphic-fetch';
+
 
 describe('Default instance get() method', () => {
   let url = 'http://example.com/page';
+  let fetchStub;
 
-  beforeEach(() => {
-    spyOn(window, 'fetch');
-  });
+  before(() => fetchStub = sinon.stub(global, 'fetch'));
 
-  it('should call window.fetch with the same parameters', (done) => {
-    window.fetch(url);
+  after(() => fetchStub.restore());
+
+  beforeEach(() => fetchStub.reset());
+
+  it('should call global.fetch with the same parameters', (done) => {
+    global.fetch(url);
     FetchIt.get(url)
       .then(() => {
-        let superArgs = window.fetch.calls.argsFor(1);
-        let fetchArgs = window.fetch.calls.argsFor(0);
+        let fetchItArgs = fetchStub.getCall(1).args;
+        let fetchArgs = fetchStub.getCall(0).args;
 
-        expect(window.fetch.calls.count()).toBe(2);
-        expect(superArgs.length).toBe(1);
-        expect(superArgs[0].url).toBe(fetchArgs[0]);
-        expect(superArgs[0].method).toBe('GET');
-        expect(superArgs[0].headers.getAll().length).toBe(0);
+        expect(fetchStub.callCount).to.be.equal(2);
+        expect(fetchItArgs.length).to.be.equal(1);
+        expect(fetchItArgs[0].url).to.be.equal(fetchArgs[0]);
+        expect(fetchItArgs[0].method).to.be.equal('GET');
 
         done();
-      });
+      })
+      .catch(done.fail);
   });
 
   it('should not change the method if it is specified in options', (done) => {
@@ -30,19 +34,19 @@ describe('Default instance get() method', () => {
       method: 'PUT',
     };
 
-    window.fetch(url);
+    global.fetch(url);
     FetchIt.get(url, options)
       .then(() => {
-        let superArgs = window.fetch.calls.argsFor(1);
-        let fetchArgs = window.fetch.calls.argsFor(0);
+        let fetchItArgs = fetchStub.getCall(1).args;
+        let fetchArgs = fetchStub.getCall(0).args;
 
-        expect(window.fetch.calls.count()).toBe(2);
-        expect(superArgs.length).toBe(1);
-        expect(superArgs[0].url).toBe(fetchArgs[0]);
-        expect(superArgs[0].method).toBe('GET');
-        expect(superArgs[0].headers.getAll().length).toBe(0);
+        expect(fetchStub.callCount).to.be.equal(2);
+        expect(fetchItArgs.length).to.be.equal(1);
+        expect(fetchItArgs[0].url).to.be.equal(fetchArgs[0]);
+        expect(fetchItArgs[0].method).to.be.equal('GET');
 
         done();
-      });
+      })
+      .catch(done.fail);
   });
 });

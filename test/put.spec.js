@@ -1,35 +1,43 @@
 import FetchIt from '../src/fetch-it.js';
-import 'whatwg-fetch';
+import 'isomorphic-fetch';
+
+import './node.fix';
+
 
 describe('Default instance put() method', () => {
   let url = 'http://example.com/page';
+  let fetchStub;
 
-  beforeEach(() => {
-    spyOn(window, 'fetch');
-  });
+  before(() => fetchStub = sinon.stub(global, 'fetch'));
 
-  it('should call window.fetch with the same parameters', (done) => {
+  after(() => fetchStub.restore());
+
+  beforeEach(() => fetchStub.reset());
+
+  it('should call global.fetch with the same parameters', (done) => {
     let data = {
       data: 'data'
     };
 
-    window.fetch(url, { body: window.JSON.stringify(data), method: 'PUT' });
+    global.fetch(url, { body: global.JSON.stringify(data), method: 'PUT' });
     FetchIt.put(url, data)
       .then(() => {
-        let superArgs = window.fetch.calls.argsFor(1);
-        let fetchArgs = window.fetch.calls.argsFor(0);
+        let fetchItArgs = fetchStub.getCall(1).args;
+        let fetchArgs = fetchStub.getCall(0).args;
 
-        expect(window.fetch.calls.count()).toBe(2);
-        expect(superArgs.length).toBe(1);
-        expect(superArgs[0].url).toBe(fetchArgs[0]);
-        expect(superArgs[0].method).toBe(fetchArgs[1].method);
-        expect(superArgs[0].method).toBe('PUT');
-        expect(superArgs[0]._bodyText).toBe(fetchArgs[1].body);
-        expect(superArgs[0]._bodyText).toBe(window.JSON.stringify(data));
-        expect(superArgs[0].headers.getAll().length).toBe(0);
+        expect(fetchStub.callCount).to.be.equal(2);
+        expect(fetchItArgs.length).to.be.equal(1);
+        expect(fetchItArgs[0].url).to.be.equal(fetchArgs[0]);
+        expect(fetchItArgs[0].method).to.be.equal(fetchArgs[1].method);
+        expect(fetchItArgs[0].method).to.be.equal('PUT');
+        return global.Promise.all([fetchItArgs[0].text(), fetchArgs[1].body]);
+      })
+      .then(([fetchItBody, fetchBody]) => {
+        expect(fetchItBody).to.be.equal(fetchBody);
 
         done();
-      });
+      })
+      .catch(done.fail);
   });
 
   it('should not change the method if it is specified in options', (done) => {
@@ -41,22 +49,24 @@ describe('Default instance put() method', () => {
       data: 'data'
     };
 
-    window.fetch(url, { body: window.JSON.stringify(data), method: 'PUT' });
+    global.fetch(url, { body: global.JSON.stringify(data), method: 'PUT' });
     FetchIt.put(url, data, options)
       .then(() => {
-        let superArgs = window.fetch.calls.argsFor(1);
-        let fetchArgs = window.fetch.calls.argsFor(0);
+        let fetchItArgs = fetchStub.getCall(1).args;
+        let fetchArgs = fetchStub.getCall(0).args;
 
-        expect(window.fetch.calls.count()).toBe(2);
-        expect(superArgs.length).toBe(1);
-        expect(superArgs[0].url).toBe(fetchArgs[0]);
-        expect(superArgs[0].method).toBe(fetchArgs[1].method);
-        expect(superArgs[0].method).toBe('PUT');
-        expect(superArgs[0]._bodyText).toBe(fetchArgs[1].body);
-        expect(superArgs[0]._bodyText).toBe(window.JSON.stringify(data));
-        expect(superArgs[0].headers.getAll().length).toBe(0);
+        expect(fetchStub.callCount).to.be.equal(2);
+        expect(fetchItArgs.length).to.be.equal(1);
+        expect(fetchItArgs[0].url).to.be.equal(fetchArgs[0]);
+        expect(fetchItArgs[0].method).to.be.equal(fetchArgs[1].method);
+        expect(fetchItArgs[0].method).to.be.equal('PUT');
+        return global.Promise.all([fetchItArgs[0].text(), fetchArgs[1].body]);
+      })
+      .then(([fetchItBody, fetchBody]) => {
+        expect(fetchItBody).to.be.equal(fetchBody);
 
         done();
-      });
+      })
+      .catch(done.fail);
   });
 });

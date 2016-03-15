@@ -1,28 +1,34 @@
 import FetchIt from '../src/fetch-it.js';
-import 'whatwg-fetch';
+import 'isomorphic-fetch';
+
+import './node.fix';
+
 
 describe('Default instance fetch() method', () => {
   let url = 'http://example.com/page';
+  let fetchStub;
 
-  beforeEach(() => {
-    spyOn(window, 'fetch');
-  });
+  before(() => fetchStub = sinon.stub(global, 'fetch'));
 
-  it('should call window.fetch with the same parameters (only url)', (done) => {
-    window.fetch(url);
+  after(() => fetchStub.restore());
+
+  beforeEach(() => fetchStub.reset());
+
+  it('should call global.fetch with the same parameters (only url)', (done) => {
+    global.fetch(url);
     FetchIt.fetch(url)
       .then(() => {
-        let superArgs = window.fetch.calls.argsFor(1);
-        let fetchArgs = window.fetch.calls.argsFor(0);
+        let fetchItArgs = fetchStub.getCall(1).args;
+        let fetchArgs = fetchStub.getCall(0).args;
 
-        expect(window.fetch.calls.count()).toBe(2);
-        expect(superArgs.length).toBe(1);
-        expect(superArgs[0].url).toBe(fetchArgs[0]);
-        expect(superArgs[0].method).toBe('GET');
-        expect(superArgs[0].headers.getAll().length).toBe(0);
+        expect(fetchStub.callCount).to.be.equal(2);
+        expect(fetchItArgs.length).to.be.equal(1);
+        expect(fetchItArgs[0].url).to.be.equal(fetchArgs[0]);
+        expect(fetchItArgs[0].method).to.be.equal('GET');
 
         done();
-      });
+      })
+      .catch(done.fail);
   });
 
   it('should add default GET method if not present', (done) => {
@@ -32,22 +38,23 @@ describe('Default instance fetch() method', () => {
       }
     };
 
-    window.fetch(url, options);
+    global.fetch(url, options);
     FetchIt.fetch(url, options)
       .then(() => {
-        let superArgs = window.fetch.calls.argsFor(1);
-        let fetchArgs = window.fetch.calls.argsFor(0);
+        let fetchItArgs = fetchStub.getCall(1).args;
+        let fetchArgs = fetchStub.getCall(0).args;
 
-        expect(window.fetch.calls.count()).toBe(2);
-        expect(superArgs.length).toBe(1);
-        expect(superArgs[0].url).toBe(fetchArgs[0]);
-        expect(superArgs[0].headers.has('x-custom-header')).toBe(true);
-        expect(superArgs[0].headers.get('x-custom-header'))
-          .toBe(fetchArgs[1].headers['x-custom-header']);
-        expect(superArgs[0].method).toBe('GET');
+        expect(fetchStub.callCount).to.be.equal(2);
+        expect(fetchItArgs.length).to.be.equal(1);
+        expect(fetchItArgs[0].url).to.be.equal(fetchArgs[0]);
+        expect(fetchItArgs[0].headers.has('x-custom-header')).to.be.equal(true);
+        expect(fetchItArgs[0].headers.get('x-custom-header'))
+          .to.be.equal(fetchArgs[1].headers['x-custom-header']);
+        expect(fetchItArgs[0].method).to.be.equal('GET');
 
         done();
-      });
+      })
+      .catch(done.fail);
   });
 
   it('should not change the method if specified', (done) => {
@@ -58,22 +65,23 @@ describe('Default instance fetch() method', () => {
       method: 'PUT',
     };
 
-    window.fetch(url, options);
+    global.fetch(url, options);
     FetchIt.fetch(url, options)
       .then(() => {
-        let superArgs = window.fetch.calls.argsFor(1);
-        let fetchArgs = window.fetch.calls.argsFor(0);
+        let fetchItArgs = fetchStub.getCall(1).args;
+        let fetchArgs = fetchStub.getCall(0).args;
 
-        expect(window.fetch.calls.count()).toBe(2);
-        expect(superArgs.length).toBe(1);
-        expect(superArgs[0].url).toBe(fetchArgs[0]);
-        expect(superArgs[0].headers.has('x-custom-header')).toBe(true);
-        expect(superArgs[0].headers.get('x-custom-header'))
-          .toBe(fetchArgs[1].headers['x-custom-header']);
-        expect(superArgs[0].method).toBe('PUT');
+        expect(fetchStub.callCount).to.be.equal(2);
+        expect(fetchItArgs.length).to.be.equal(1);
+        expect(fetchItArgs[0].url).to.be.equal(fetchArgs[0]);
+        expect(fetchItArgs[0].headers.has('x-custom-header')).to.be.equal(true);
+        expect(fetchItArgs[0].headers.get('x-custom-header'))
+          .to.be.equal(fetchArgs[1].headers['x-custom-header']);
+        expect(fetchItArgs[0].method).to.be.equal('PUT');
 
         done();
-      });
+      })
+      .catch(done.fail);
   });
 
   it('should add POST method if no method is specified and there is a body',
@@ -82,27 +90,31 @@ describe('Default instance fetch() method', () => {
           headers: {
             'x-custom-header': 'custom'
           },
-          body: window.JSON.stringify({
+          body: global.JSON.stringify({
             data: 'data'
           })
         };
 
-        window.fetch(url, options);
+        global.fetch(url, options);
         FetchIt.fetch(url, options)
           .then(() => {
-            let superArgs = window.fetch.calls.argsFor(1);
-            let fetchArgs = window.fetch.calls.argsFor(0);
+            let fetchItArgs = fetchStub.getCall(1).args;
+            let fetchArgs = fetchStub.getCall(0).args;
 
-            expect(window.fetch.calls.count()).toBe(2);
-            expect(superArgs.length).toBe(1);
-            expect(superArgs[0].url).toBe(fetchArgs[0]);
-            expect(superArgs[0].headers.has('x-custom-header')).toBe(true);
-            expect(superArgs[0].headers.get('x-custom-header'))
-              .toBe(fetchArgs[1].headers['x-custom-header']);
-            expect(superArgs[0].method).toBe('POST');
-            expect(superArgs[0]._bodyText).toBe(fetchArgs[1].body);
+            expect(fetchStub.callCount).to.be.equal(2);
+            expect(fetchItArgs.length).to.be.equal(1);
+            expect(fetchItArgs[0].url).to.be.equal(fetchArgs[0]);
+            expect(fetchItArgs[0].headers.has('x-custom-header')).to.be.equal(true);
+            expect(fetchItArgs[0].headers.get('x-custom-header'))
+              .to.be.equal(fetchArgs[1].headers['x-custom-header']);
+            expect(fetchItArgs[0].method).to.be.equal('POST');
+            return fetchItArgs[0].text();
+          })
+          .then((fetchItBody) => {
+            expect(fetchItBody).to.be.equal(options.body);
 
             done();
-          });
+          })
+          .catch(done.fail);
       });
 });

@@ -1,16 +1,22 @@
 {
   "name": "fetch-it",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "An extended version of window.fetch with interceptors and configurable instances",
   "main": "dist/fetch-it.js",
   "scripts": {
     "prepublish": "npm run build",
     "build": "rm -rf dist && $(npm bin)/webpack",
-    "test": "$(npm bin)/karma start --single-run"
+    "test": "npm run test:browser && npm run test:node",
+    "test:browser": "$(npm bin)/karma start --single-run",
+    "test:node": "$(npm bin)/mocha --opts mocha.opts"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/tryolabs/fetch-it.git"
+  },
+  "homepage": "https://github.com/tryolabs/fetch-it",
+  "bugs": {
+    "url": "https://github.com/tryolabs/fetch-it/issues"
   },
   "keywords": [
     "fetch",
@@ -30,8 +36,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "es6-promise": "^3.1.2",
-    "whatwg-fetch": "^0.11.0"
+    "isomorphic-fetch": "^2.2.1"
   },
   "devDependencies": {
     "babel-core": "^6.4.5",
@@ -40,20 +45,26 @@
     "babel-plugin-add-module-exports": "^0.1.2",
     "babel-polyfill": "^6.5.0",
     "babel-preset-es2015": "^6.3.13",
+    "chai": "^3.5.0",
     "eslint": "^1.10.3",
     "eslint-loader": "^1.2.0",
     "eslint-plugin-babel": "^3.0.0",
-    "jasmine": "^2.4.1",
-    "jasmine-core": "^2.4.1",
     "karma": "^0.13.19",
     "karma-babel-preprocessor": "^6.0.1",
+    "karma-chai": "^0.1.0",
     "karma-es6-shim": "^0.2.3",
     "karma-eslint": "^2.0.1",
-    "karma-jasmine": "^0.3.6",
+    "karma-mocha": "^0.2.2",
     "karma-phantomjs-launcher": "^0.2.3",
+    "karma-sinon": "^1.0.4",
+    "karma-sinon-chai": "^1.2.0",
     "karma-spec-reporter": "0.0.23",
     "karma-webpack": "^1.7.0",
+    "lolex": "^1.4.0",
+    "mocha": "^2.4.5",
     "phantomjs": "^1.9.19",
+    "sinon": "^1.17.3",
+    "sinon-chai": "^2.8.0",
     "webpack": "^1.12.11"
   }
 }
