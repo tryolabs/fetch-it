@@ -1,6 +1,7 @@
 import FetchIt from '../src/fetch-it.js';
 import 'isomorphic-fetch';
 
+
 describe('Middleware features', () => {
   let url = 'http://example.com/page';
   let fetchStub;

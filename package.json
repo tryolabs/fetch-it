@@ -6,7 +6,9 @@
   "scripts": {
     "prepublish": "npm run build",
     "build": "rm -rf dist && $(npm bin)/webpack",
-    "test": "$(npm bin)/karma start --single-run"
+    "test": "npm run test:browser && npm run test:node",
+    "test:browser": "$(npm bin)/karma start --single-run",
+    "test:node": "$(npm bin)/mocha --opts mocha.opts"
   },
   "repository": {
     "type": "git",

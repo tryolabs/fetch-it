@@ -1,6 +1,9 @@
 import FetchIt from '../src/fetch-it.js';
 import 'isomorphic-fetch';
 
+import './node.fix';
+
+
 describe('Default instance fetch() method', () => {
   let url = 'http://example.com/page';
   let fetchStub;
