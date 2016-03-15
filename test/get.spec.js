@@ -22,10 +22,10 @@ describe('Default instance get() method', () => {
         expect(fetchItArgs.length).to.be.equal(1);
         expect(fetchItArgs[0].url).to.be.equal(fetchArgs[0]);
         expect(fetchItArgs[0].method).to.be.equal('GET');
-        expect(fetchItArgs[0].headers.getAll().length).to.be.equal(0);
 
         done();
-      });
+      })
+      .catch(done.fail);
   });
 
   it('should not change the method if it is specified in options', (done) => {
@@ -43,9 +43,9 @@ describe('Default instance get() method', () => {
         expect(fetchItArgs.length).to.be.equal(1);
         expect(fetchItArgs[0].url).to.be.equal(fetchArgs[0]);
         expect(fetchItArgs[0].method).to.be.equal('GET');
-        expect(fetchItArgs[0].headers.getAll().length).to.be.equal(0);
 
         done();
-      });
+      })
+      .catch(done.fail);
   });
 });

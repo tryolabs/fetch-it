@@ -1,6 +1,9 @@
 import FetchIt from '../src/fetch-it.js';
 import 'isomorphic-fetch';
 
+import './node.fix';
+
+
 describe('Default instance patch() method', () => {
   let url = 'http://example.com/page';
   let fetchStub;
@@ -27,12 +30,14 @@ describe('Default instance patch() method', () => {
         expect(fetchItArgs[0].url).to.be.equal(fetchArgs[0]);
         expect(fetchItArgs[0].method).to.be.equal(fetchArgs[1].method);
         expect(fetchItArgs[0].method).to.be.equal('PATCH');
-        expect(fetchItArgs[0]._bodyText).to.be.equal(fetchArgs[1].body);
-        expect(fetchItArgs[0]._bodyText).to.be.equal(global.JSON.stringify(data));
-        expect(fetchItArgs[0].headers.getAll().length).to.be.equal(0);
+        return global.Promise.all([fetchItArgs[0].text(), fetchArgs[1].body]);
+      })
+      .then(([fetchItBody, fetchBody]) => {
+        expect(fetchItBody).to.be.equal(fetchBody);
 
         done();
-      });
+      })
+      .catch(done.fail);
   });
 
   it('should not change the method if it is specified in options', (done) => {
@@ -55,11 +60,13 @@ describe('Default instance patch() method', () => {
         expect(fetchItArgs[0].url).to.be.equal(fetchArgs[0]);
         expect(fetchItArgs[0].method).to.be.equal(fetchArgs[1].method);
         expect(fetchItArgs[0].method).to.be.equal('PATCH');
-        expect(fetchItArgs[0]._bodyText).to.be.equal(fetchArgs[1].body);
-        expect(fetchItArgs[0]._bodyText).to.be.equal(global.JSON.stringify(data));
-        expect(fetchItArgs[0].headers.getAll().length).to.be.equal(0);
+        return global.Promise.all([fetchItArgs[0].text(), fetchArgs[1].body]);
+      })
+      .then(([fetchItBody, fetchBody]) => {
+        expect(fetchItBody).to.be.equal(fetchBody);
 
         done();
-      });
+      })
+      .catch(done.fail);
   });
 });

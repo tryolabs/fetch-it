@@ -22,10 +22,10 @@ describe('Default instance fetch() method', () => {
         expect(fetchItArgs.length).to.be.equal(1);
         expect(fetchItArgs[0].url).to.be.equal(fetchArgs[0]);
         expect(fetchItArgs[0].method).to.be.equal('GET');
-        expect(fetchItArgs[0].headers.getAll().length).to.be.equal(0);
 
         done();
-      });
+      })
+      .catch(done.fail);
   });
 
   it('should add default GET method if not present', (done) => {
@@ -50,7 +50,8 @@ describe('Default instance fetch() method', () => {
         expect(fetchItArgs[0].method).to.be.equal('GET');
 
         done();
-      });
+      })
+      .catch(done.fail);
   });
 
   it('should not change the method if specified', (done) => {
@@ -64,19 +65,20 @@ describe('Default instance fetch() method', () => {
     global.fetch(url, options);
     FetchIt.fetch(url, options)
       .then(() => {
-        let superArgs = fetchStub.getCall(1).args;
+        let fetchItArgs = fetchStub.getCall(1).args;
         let fetchArgs = fetchStub.getCall(0).args;
 
         expect(fetchStub.callCount).to.be.equal(2);
-        expect(superArgs.length).to.be.equal(1);
-        expect(superArgs[0].url).to.be.equal(fetchArgs[0]);
-        expect(superArgs[0].headers.has('x-custom-header')).to.be.equal(true);
-        expect(superArgs[0].headers.get('x-custom-header'))
+        expect(fetchItArgs.length).to.be.equal(1);
+        expect(fetchItArgs[0].url).to.be.equal(fetchArgs[0]);
+        expect(fetchItArgs[0].headers.has('x-custom-header')).to.be.equal(true);
+        expect(fetchItArgs[0].headers.get('x-custom-header'))
           .to.be.equal(fetchArgs[1].headers['x-custom-header']);
-        expect(superArgs[0].method).to.be.equal('PUT');
+        expect(fetchItArgs[0].method).to.be.equal('PUT');
 
         done();
-      });
+      })
+      .catch(done.fail);
   });
 
   it('should add POST method if no method is specified and there is a body',
@@ -93,19 +95,23 @@ describe('Default instance fetch() method', () => {
         global.fetch(url, options);
         FetchIt.fetch(url, options)
           .then(() => {
-            let superArgs = fetchStub.getCall(1).args;
+            let fetchItArgs = fetchStub.getCall(1).args;
             let fetchArgs = fetchStub.getCall(0).args;
 
             expect(fetchStub.callCount).to.be.equal(2);
-            expect(superArgs.length).to.be.equal(1);
-            expect(superArgs[0].url).to.be.equal(fetchArgs[0]);
-            expect(superArgs[0].headers.has('x-custom-header')).to.be.equal(true);
-            expect(superArgs[0].headers.get('x-custom-header'))
+            expect(fetchItArgs.length).to.be.equal(1);
+            expect(fetchItArgs[0].url).to.be.equal(fetchArgs[0]);
+            expect(fetchItArgs[0].headers.has('x-custom-header')).to.be.equal(true);
+            expect(fetchItArgs[0].headers.get('x-custom-header'))
               .to.be.equal(fetchArgs[1].headers['x-custom-header']);
-            expect(superArgs[0].method).to.be.equal('POST');
-            expect(superArgs[0]._bodyText).to.be.equal(fetchArgs[1].body);
+            expect(fetchItArgs[0].method).to.be.equal('POST');
+            return fetchItArgs[0].text();
+          })
+          .then((fetchItBody) => {
+            expect(fetchItBody).to.be.equal(options.body);
 
             done();
-          });
+          })
+          .catch(done.fail);
       });
 });

@@ -23,10 +23,10 @@ describe('Default instance delete() method', () => {
         expect(fetchItArgs[0].url).to.be.equal(fetchArgs[0]);
         expect(fetchItArgs[0].method).to.be.equal(fetchArgs[1].method);
         expect(fetchItArgs[0].method).to.be.equal('DELETE');
-        expect(fetchItArgs[0].headers.getAll().length).to.be.equal(0);
 
         done();
-      });
+      })
+      .catch(done.fail);
   });
 
   it('should not change the method if it is specified in options', (done) => {
@@ -45,9 +45,9 @@ describe('Default instance delete() method', () => {
         expect(fetchItArgs[0].url).to.be.equal(fetchArgs[0]);
         expect(fetchItArgs[0].method).to.be.equal(fetchArgs[1].method);
         expect(fetchItArgs[0].method).to.be.equal('DELETE');
-        expect(fetchItArgs[0].headers.getAll().length).to.be.equal(0);
 
         done();
-      });
+      })
+      .catch(done.fail);
   });
 });
