@@ -20,11 +20,14 @@ class FetchIt {
     options = Object.assign({}, this.config, options || {});
     options.method = method || options.method || defaultMethod;
     if (!!data) {
-      if (data instanceof global.Blob || data instanceof global.FormData ||
-          typeof data === 'string') {
+      if (typeof data === 'string') {
         options.body = data;
       } else {
-        options.body = global.JSON.stringify(data);
+        try {
+          options.body = global.JSON.stringify(data);
+        } catch (e) {
+          options.body = data;
+        }
       }
     }
 
