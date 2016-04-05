@@ -11,13 +11,10 @@ class FetchIt {
   }
 
   _createRequest(url, options, method, data) {
-    if (!options && !method && !data) {
-      return new global.Request(url);
-    }
-
-    let defaultMethod = !data && (!!options && !options.body) ? 'GET' : 'POST';
-
     options = Object.assign({}, this.config, options || {});
+
+    let defaultMethod = !data && !options.body ? 'GET' : 'POST';
+
     options.method = method || options.method || defaultMethod;
     if (!!data) {
       if (typeof data === 'string') {
