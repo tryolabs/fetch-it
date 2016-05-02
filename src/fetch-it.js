@@ -4,6 +4,19 @@ import 'isomorphic-fetch';
 const DEFAULT_CONFIG = {};
 
 
+function isFormData(o) {
+  return toString.call(o) === '[object FormData]';
+}
+
+function isURLSearchParams(o) {
+  return toString.call(o) === '[object URLSearchParams]';
+}
+
+function isBlob(o) {
+  return toString.call(o) === '[object Blob]';
+}
+
+
 class FetchIt {
   constructor(config) {
     this.config = config || DEFAULT_CONFIG;
@@ -17,7 +30,8 @@ class FetchIt {
 
     options.method = method || options.method || defaultMethod;
     if (!!data) {
-      if (typeof data === 'string') {
+      if (typeof data === 'string' || isFormData(data) ||
+          isURLSearchParams(data) || isBlob(data)) {
         options.body = data;
       } else {
         try {

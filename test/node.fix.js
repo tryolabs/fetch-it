@@ -4,11 +4,17 @@
  * to fix the problem.
  * This should be removed as soon as node-fetch implement that method.
  * Probably the next version will have it, since the method is implemented
- * in the master branch of the githb repository.
+ * in the master branch of the github repository.
  */
 
 if (typeof global.Request.prototype.text !== 'function') {
   global.Request.prototype.text = function () {
+    return global.Promise.resolve(this.body);
+  };
+}
+
+if (typeof global.Request.prototype.formData !== 'function') {
+  global.Request.prototype.formData = function () {
     return global.Promise.resolve(this.body);
   };
 }
